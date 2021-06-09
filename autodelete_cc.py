@@ -21,15 +21,15 @@ daysAgo = 360 #!Commenting out to streamline testing #int(input('How far back wo
 oldestDateToKeep = datetime.now() - timedelta(days=daysAgo)
 
 #* Collect all the tweets we can (Important Fields: tweet.id, tweet.created_at, tweet.favorited, tweet.retweeted)
-# rawTweets = tw.Cursor(api.user_timeline, id=user_id,).items()
+rawTweets = tw.Cursor(api.user_timeline, id=user_id,).items()
 
 tweetsToDelete = []
-# for tweet in rawTweets:
-#     if tweet.created_at < oldestDateToKeep:
-#         print(tweet.id)
-#         tweetsToDelete.append(tweet.id)
+for tweet in rawTweets:
+    if tweet.created_at < oldestDateToKeep:
+        print(tweet.id)
+        tweetsToDelete.append(tweet.id)
 
-# print(tweetsToDelete)
+print(tweetsToDelete)
 
 def deleteTweets(tweetsList):
     for tweet in tweetsList:
@@ -42,7 +42,7 @@ def deleteTweets(tweetsList):
 
 #* Now we'll handle the Favorites
 rawFavorites = tw.Cursor(api.favorites, id=user_id).items()
-# print(rawFavorites)
+print(rawFavorites)
 
 tweetsToUnfavorite = []
 for tweet in rawFavorites:
