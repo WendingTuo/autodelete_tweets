@@ -16,27 +16,20 @@ user = api.me()
 user_id = user.id
 
 #* Set how far back you'd like to retain tweets
-daysAgo = 110 #!Commenting out to streamline testing #int(input('How far back would you like to retain your tweets?'))
+daysAgo = 360 #!Commenting out to streamline testing #int(input('How far back would you like to retain your tweets?'))
 
 oldestDateToKeep = datetime.now() - timedelta(days=daysAgo)
 
 #* Collect all the tweets we can (Important Fields: tweet.id, tweet.created_at, tweet.favorited, tweet.retweeted)
-rawTweets = api.user_timeline(user_id, count = 3200)
+# rawTweets = tw.Cursor(api.user_timeline, id=user_id,).items()
 
 tweetsToDelete = []
-for tweet in rawTweets:
-    if tweet.created_at < oldestDateToKeep:
-        print(tweet.id)
-        tweetsToDelete.append(tweet.id)
-        
-tweetsToUnfavorite = []
-for tweet in rawTweets:
-    if tweet.created_at < oldestDateToKeep and tweet.favorited is True:
-        print(tweet.id)
-        tweetsToUnfavorite.append(tweet.id)
+# for tweet in rawTweets:
+#     if tweet.created_at < oldestDateToKeep:
+#         print(tweet.id)
+#         tweetsToDelete.append(tweet.id)
 
-print(tweetsToDelete)
-print(tweetsToUnfavorite)
+# print(tweetsToDelete)
 
 def deleteTweets(tweetsList):
     for tweet in tweetsList:
@@ -46,14 +39,28 @@ def deleteTweets(tweetsList):
         except Exception:
             print("Failed to delete:", tweet)
 
+
+#* Now we'll handle the Favorites
+rawFavorites = tw.Cursor(api.favorites, id=user_id).items()
+# print(rawFavorites)
+
+tweetsToUnfavorite = []
+for tweet in rawFavorites:
+    if tweet.created_at < oldestDateToKeep:
+        print(tweet.id)
+        tweetsToUnfavorite.append(tweet.id)
+
+print(tweetsToUnfavorite)
+
 def unfavoriteTweets(tweetsList):
     for tweet in tweetsList:
         try:
             api.destroy_favorite(tweet)
-            print("Deleted:", tweet)
+            print("Unfavorited:", tweet)
         except Exception:
-            print("Failed to delete:", tweet)
+            print("Failed to unfavorite:", tweet)
 
+#* This is the main deletion code - Asks for y/n and proceeds to delete or quit based on the answer.
 while (res:= input('Do you want to delete ' + str(len(tweetsToDelete)) + ' and unfavorite ' + str(len(tweetsToUnfavorite)) + ' tweets? (y/n): ').lower()) not in {"y", "n"}: pass
 if res=='y':
     print("Deleting/Unfavoriting tweets now!")
