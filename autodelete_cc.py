@@ -67,7 +67,7 @@ if res=='y':
     deleteTweets(tweetsToDelete)
     unfavoriteTweets(tweetsToUnfavorite)
 if res=='n':
-    continue
+    print("Deletion cancelled!")
 
 print("Exiting in 3 seconds...")
 time.sleep(3)
