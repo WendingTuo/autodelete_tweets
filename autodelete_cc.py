@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 # Import the api_secrets variables
 from api_secrets import *
 
-# Import authentication information
+# Import authentication information from api_secrets.py
 auth = tw.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tw.API(auth, wait_on_rate_limit=True)
@@ -16,17 +16,17 @@ user = api.me()
 user_id = user.id
 
 #* Set how far back you'd like to retain tweets
-daysAgo = 360 #!Commenting out to streamline testing #int(input('How far back would you like to retain your tweets?'))
+daysAgo = 10
 
 oldestDateToKeep = datetime.now() - timedelta(days=daysAgo)
 
 #* Collect all the tweets we can (Important Fields: tweet.id, tweet.created_at, tweet.favorited, tweet.retweeted)
-rawTweets = tw.Cursor(api.user_timeline, id=user_id,).items()
-
 tweetsToDelete = []
+
+rawTweets = tw.Cursor(api.user_timeline, id=user_id).items(400)
 for tweet in rawTweets:
     if tweet.created_at < oldestDateToKeep:
-        print(tweet.id)
+        # print(tweet.id)
         tweetsToDelete.append(tweet.id)
 
 print(tweetsToDelete)
@@ -41,10 +41,10 @@ def deleteTweets(tweetsList):
 
 
 #* Now we'll handle the Favorites
-rawFavorites = tw.Cursor(api.favorites, id=user_id).items()
-print(rawFavorites)
-
 tweetsToUnfavorite = []
+
+rawFavorites = tw.Cursor(api.favorites).items(500)
+
 for tweet in rawFavorites:
     if tweet.created_at < oldestDateToKeep:
         print(tweet.id)
@@ -67,6 +67,8 @@ if res=='y':
     deleteTweets(tweetsToDelete)
     unfavoriteTweets(tweetsToUnfavorite)
 if res=='n':
-    print("Exiting in 3 seconds...")
-    time.sleep(3)
+    continue
+
+print("Exiting in 3 seconds...")
+time.sleep(3)
 sys.exit()
