@@ -7,7 +7,7 @@ This program is intended retrieve tweets and likes > 7 days old and delete them.
 1. In order to authenticate, you'll need to create a credential file using the following details:  
 	Name: `api_secrets.py`  
 	Contents:  
-		```
+		```{r tidy=FALSE}
 		consumer_key = ""  
 		consumer_secret = ""  
 		access_token = ""  
