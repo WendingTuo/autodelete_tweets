@@ -1,4 +1,4 @@
-# autodelete_cc
+# autodelete_tweets
 
 This program is intended retrieve tweets and likes > 7 days old and delete them.
 
