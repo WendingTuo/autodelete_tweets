@@ -8,10 +8,10 @@ This program is intended retrieve tweets and likes > 7 days old and delete them.
 	Name: `api_secrets.py`  
 	Contents:  
 	```
-		consumer_key = ""  \
-		consumer_secret = ""  \
-		access_token = ""  \
-		access_token_secret = ""  \
+		consumer_key = ""  
+		consumer_secret = ""  
+		access_token = ""  
+		access_token_secret = ""  
 	```
 2. Fill in the variables with the account secrets from your twitter dev instance.
 3. Change the `daysAgo` variable to the number of days worth of tweets/favorites you'd like to keep. (Default = 10)
