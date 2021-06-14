@@ -5,16 +5,20 @@ import time
 import tweepy as tw
 from datetime import datetime, timedelta
 import argparse
+from pushover import init, Client
 
 # Import the api_secrets variables
 from api_secrets import *
 
-# Import authentication information from api_secrets.py
+# Import Twitter authentication information from api_secrets.py
 auth = tw.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tw.API(auth, wait_on_rate_limit=True)
 user = api.me()
 user_id = user.id
+
+# Initialize Pushover using authentication information from api_secrets.py
+pushoverClient = Client(pushover_user_key, api_token=pushover_api_token)
 
 #* Set how far back you'd like to retain tweets
 daysAgo = 10
@@ -64,13 +68,15 @@ def unfavoriteTweets(tweetsList):
         except Exception:
             print("Failed to unfavorite:", tweet)
 
-#* This is the main deletion code - Asks for y/n and proceeds to delete or quit based on the answer.
+#* This is the main deletion code - Asks for y/n via CLI and proceeds to delete or quit based on the answer.
 if cliConfirm == 'y':
-    print ("Deleting " + str(len(tweetsToDelete)) + " and unfavoriting " + str(len(tweetsToUnfavorite)) + " tweets now!")
+    pushoverClient.send_message("Deleting " + str(len(tweetsToDelete)) + " and unfavoriting " + str(len(tweetsToUnfavorite)) + " tweets now!")
     deleteTweets(tweetsToDelete)
     unfavoriteTweets(tweetsToUnfavorite)
+    pushoverClient.send_message("Deleted " + str(len(tweetsToDelete)) + " and unfavorited " + str(len(tweetsToUnfavorite)) + " tweets!", title="Autodelete Complete")
 elif cliConfirm=='n':
     print("No deletion requested - To delete, change your cli argument to '-c y'.")
+    pushoverClient.send_message("Collected " + str(len(tweetsToDelete)) + " tweets to delete and " + str(len(tweetsToUnfavorite)) + " to unfavorite!", title="Autodelete Incomplete")
 else:
     while (res:= input('Do you want to delete ' + str(len(tweetsToDelete)) + ' and unfavorite ' + str(len(tweetsToUnfavorite)) + ' tweets? (y/n): ').lower()) not in {"y", "n"}: pass
     if res=='y':
