@@ -2,9 +2,9 @@
 import os
 import sys
 import time
+import argparse
 import tweepy as tw
 from datetime import datetime, timedelta
-import argparse
 from pushover import init, Client
 
 # Import the api_secrets variables
@@ -35,7 +35,7 @@ cliConfirm = cliSetup()
 
 #* Collect all the tweets we can (Important Fields: tweet.id, tweet.created_at, tweet.favorited, tweet.retweeted)
 tweetsToDelete = []
-rawTweets = tw.Cursor(api.user_timeline, id=user_id).items(500)
+rawTweets = tw.Cursor(api.user_timeline, id=user_id).items(600)
 for tweet in rawTweets:
     if tweet.created_at < oldestDateToKeep:
         tweetsToDelete.append(tweet.id)
@@ -43,17 +43,21 @@ for tweet in rawTweets:
 print(tweetsToDelete)
 
 def deleteTweets(tweetsList):
+    deletedTweets = 0
+    errorTweets = 0
     for tweet in tweetsList:
         try:
             api.destroy_status(tweet)
             print("Deleted:", tweet)
+            deletedTweets += 1
         except Exception:
             print("Failed to delete:", tweet)
+            errorTweets += 1
+    return deletedTweets, errorTweets
 
 #* Now we'll handle the Favorites
 tweetsToUnfavorite = []
 rawFavorites = tw.Cursor(api.favorites).items(600)
-
 for tweet in rawFavorites:
     if tweet.created_at < oldestDateToKeep:
         tweetsToUnfavorite.append(tweet.id)
@@ -61,22 +65,27 @@ for tweet in rawFavorites:
 print(tweetsToUnfavorite)
 
 def unfavoriteTweets(tweetsList):
+    deletedFaves = 0
+    errorFaves = 0
     for tweet in tweetsList:
         try:
             api.destroy_favorite(tweet)
             print("Unfavorited:", tweet)
+            deletedFaves += 1
         except Exception:
             print("Failed to unfavorite:", tweet)
+            errorFaves += 1
+    return deletedFaves, errorFaves
 
 #* This is the main deletion code - Asks for y/n via CLI and proceeds to delete or quit based on the answer.
 if cliConfirm == 'y':
-    pushoverClient.send_message("Deleting " + str(len(tweetsToDelete)) + " and unfavoriting " + str(len(tweetsToUnfavorite)) + " tweets now!")
-    deleteTweets(tweetsToDelete)
-    unfavoriteTweets(tweetsToUnfavorite)
-    pushoverClient.send_message("Deleted " + str(len(tweetsToDelete)) + " and unfavorited " + str(len(tweetsToUnfavorite)) + " tweets!", title="Autodelete Complete")
+    pushoverClient.send_message("Deleting " + str(len(tweetsToDelete)) + " and unfavoriting " + str(len(tweetsToUnfavorite)) + " tweets now!", title="Autodelete Initialized")
+    deletedTweets, errorTweets = deleteTweets(tweetsToDelete)
+    deletedFaves, errorFaves = unfavoriteTweets(tweetsToUnfavorite)
+    pushoverClient.send_message("Deleted " + str(deletedTweets) + " and unfavorited " + str(deletedFaves) + " tweets! Errors deleting " + str(errorTweets) + " tweets and " + str(errorFaves) + " favorites.", title="Autodelete Complete")
 elif cliConfirm=='n':
     print("No deletion requested - To delete, change your cli argument to '-c y'.")
-    pushoverClient.send_message("Collected " + str(len(tweetsToDelete)) + " tweets to delete and " + str(len(tweetsToUnfavorite)) + " to unfavorite!", title="Autodelete Incomplete")
+    pushoverClient.send_message("Collected " + str(len(tweetsToDelete)) + " tweets to delete and " + str(len(tweetsToUnfavorite)) + " to unfavorite. No action taken!", title="Autodelete Incomplete")
 else:
     while (res:= input('Do you want to delete ' + str(len(tweetsToDelete)) + ' and unfavorite ' + str(len(tweetsToUnfavorite)) + ' tweets? (y/n): ').lower()) not in {"y", "n"}: pass
     if res=='y':
