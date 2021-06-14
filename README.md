@@ -17,5 +17,6 @@ This program is intended retrieve tweets and likes > 7 days old and delete them.
 3. Change the `daysAgo` variable to the number of days worth of tweets/favorites you'd like to keep. (Default = 10)
 4. Run manually, or set to run as a daily cron job (requires CLI arguments to confirm deletion)
 
-CLI Arguments: `"-c", "--confirm", help="'y' confirms the deletion on launch, 'n' will just print the lists of collected tweets"`
+## CLI Arguments:
+Confirm: `"-c", "--confirm", help="'y' confirms the deletion on launch, 'n' will just print the lists of collected tweets"`
 (Example: "$python3 autodelete_tweets.py -c y" - Will confirm the deletion of the tweets automatically.
